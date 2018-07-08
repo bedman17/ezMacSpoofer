@@ -146,7 +146,7 @@ mainmenu() {
   echo "1. Change MAC to specific MAC"
   echo "2. Change MAC to random MAC"
   echo "3. Change Interface"
-  echo "4. Change MAC to Permanent MAC"
+  echo "4. Change MAC to permanent MAC"
   echo "0. Exit"
   echo -e -n "${Red}[${Cyan}ezMacSpoofer${Yellow}@${White}$(hostname)${Red}]-[${Yellow}~${Red}] ${White}"& read answer
   if [[ $answer == 1 ]] ;then
