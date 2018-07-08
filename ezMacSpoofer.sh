@@ -98,11 +98,29 @@ scan_interface() {
   done
   select_interface
 }
+#Title Bar
+title() {
+  current_mac=$(macchanger -s $selected_interface | grep "Current" | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+  permanent_mac=$(macchanger -s $selected_interface | grep "Permanent" | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+  clear
+  echo -e "${Cyan}#-----------------------------------------------------#"
+  echo -e "${Cyan}#${BIWhite}         _____         _____             ___         ${Cyan}#"
+  echo -e "${Cyan}#${BIWhite} ___ ___|     |___ ___|  __ |___ ___ ___|  _|___ ___ ${Cyan}#"
+  echo -e "${Cyan}#${BIWhite}| -_|- _| | | | .'|  _|__   | . | . | . |  _| -_|  _|${Cyan}#"
+  echo -e "${Cyan}#${BIWhite}|___|___|_|_|_|__,|___|_____|  _|___|___|_| |___|_|  ${Cyan}#"
+  echo -e "${Cyan}#${BIWhite}                            |_|             ${On_IRed}v0.2.0${Cyan}   #"
+  echo -e "${Cyan}#-----------------------------------------------------#"
+}
+mac_status() {
+  echo -e "${White}       ${BIWhite}[${Yellow}@${BIWhite}]${White}Selected interface : ${BIRed}$selected_interface${Color_Off}"
+  echo -e "${White}       ${BIWhite}[${Yellow}@${BIWhite}]${White}Current ${BIYellow}MAC${White}        : ${BIWhite}$current_mac${Color_Off}"
+  echo -e "${White}       ${BIWhite}[${Yellow}@${BIWhite}]${White}Permanent ${BIYellow}MAC${White}      : ${BIGreen}$permanent_mac${Color_Off}"
+  echo -e "${Cyan}#-----------------------------------------------------#"
+}
 #Interface Selector
 select_interface() {
-  clear
-  echo -e "${White}Please select an interface.."
-  echo -e "${Cyan}No. Status\tInterface${Color_Off}"
+  title
+  echo -e "  ${Cyan}No. Status\t\tInterface${Color_Off}"
   for ((i=1; i<=${#interface_list[@]}; i++))
   do
     if ifconfig ${interface_list[$i-1]} | grep -q "UP" ;then
@@ -111,13 +129,16 @@ select_interface() {
       status="${Red}DOWN${Color_Off}"
     fi
     if [[ $i -lt 10 ]] ;then
-      echo -e "0$i. $status\t${interface_list[$i-1]}"
+      echo -e "  0$i. $status\t${interface_list[$i-1]}"
     else
-      echo -e "$i. $status\t${interface_list[$i-1]}"
+      echo -e "  $i. $status\t${interface_list[$i-1]}"
     fi
   done
-  echo -e "99. ${Yellow}Re-scan${Color_Off}"
-  echo -e "00. ${Red}Exit${Color_Off}"
+  echo -e "  99. ${Yellow}Re-scan${Color_Off}"
+  echo -e "  00. ${Red}Exit${Color_Off}"
+  echo -e "${Cyan}#-----------------------------------------------------#"
+  echo -e "  ${BIWhite}Select an interface..."
+  echo -e "${Cyan}#-----------------------------------------------------#"
   echo -e -n "${Red}[${Cyan}ezMacSpoofer${Yellow}@${White}$(hostname)${Red}]-[${Yellow}~${Red}] ${White}"& read answer
   re='^[0-9]+$'
   if [[ $answer =~ $re ]] ;then
@@ -137,17 +158,17 @@ select_interface() {
     select_interface
   fi
 }
-#Change MAC Menu
+#Main Menu
 mainmenu() {
-  clear
-  echo "Selected interface : $selected_interface"
-  macchanger -s $selected_interface
-  echo "What do you want to do?"
-  echo "1. Change MAC to specific MAC"
-  echo "2. Change MAC to random MAC"
-  echo "3. Change Interface"
-  echo "4. Change MAC to permanent MAC"
-  echo "0. Exit"
+  title
+  mac_status
+  echo -e "  ${BIWhite}What do you want to do?"
+  echo -e "  ${Cyan}1. ${White}Change ${BIYellow}MAC${White} to specific ${BIYellow}MAC"
+  echo -e "  ${Cyan}2. ${White}Change ${BIYellow}MAC${White} to random ${BIYellow}MAC"
+  echo -e "  ${Cyan}3. ${White}Change interface"
+  echo -e "  ${Cyan}4. ${White}Change ${BIYellow}MAC${White} to permanent ${BIYellow}MAC"
+  echo -e "  ${Cyan}0. ${BIRed}Exit"
+  echo -e "${Cyan}#-----------------------------------------------------#"
   echo -e -n "${Red}[${Cyan}ezMacSpoofer${Yellow}@${White}$(hostname)${Red}]-[${Yellow}~${Red}] ${White}"& read answer
   if [[ $answer == 1 ]] ;then
     number1
@@ -164,10 +185,10 @@ mainmenu() {
   fi
 }
 number1() {
-    echo -n "Type MAC address (format: 'XX:XX:XX:XX:XX:XX') : "& read mac
+    echo -e -n "${White}Type ${BIYellow}MAC${White} address (format: 'XX:XX:XX:XX:XX:XX') : "& read mac
     ifconfig $selected_interface down
     if macchanger -m $mac $selected_interface | grep -q "New" ;then
-      echo -n "MAC address successfully changed!" && sleep 3.5 &
+      echo -e -n "${BIYellow}MAC${White} address successfully changed!${BIGreen}" && sleep 3.5 &
       spinner "$!"
       ifconfig $selected_interface up
       mainmenu
@@ -178,7 +199,7 @@ number1() {
 number2() {
   ifconfig $selected_interface down
   macchanger -r $selected_interface | grep -q ""
-  echo -n "MAC address changed to random MAC!"&& sleep 3.5 &
+  echo -e -n "${BIYellow}MAC${White} address changed to random ${BIYellow}MAC${BIGreen}"&& sleep 3.5 &
   spinner "$!"
   ifconfig $selected_interface up
   mainmenu
@@ -189,7 +210,7 @@ number3() {
 number4() {
   ifconfig $selected_interface down
   macchanger -p $selected_interface | grep -q ""
-  echo -n "MAC address changed to Permanent MAC"&& sleep 3.5 &
+  echo -e -n "${BIYellow}MAC${White} address changed to permanent ${BIYellow}MAC${BIGreen}"&& sleep 3.5 &
   spinner "$!"
   ifconfig $selected_interface up
   mainmenu
