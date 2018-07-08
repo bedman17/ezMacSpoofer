@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Add titlebar in to the menu
 ### Changed
-- Better UI
+- Update UI
 
 ## 0.1.0 - 2018-06-24
 ### Added
@@ -13,3 +13,5 @@ All notable changes to this project will be documented in this file.
 - Change MAC to random MAC
 - Change MAC to specific MAC
 - Change MAC to permanent MAC
+
+[0.2.0]: https://github.com/bedman17/ezMacSpoofer/compare/v0.1.0...v0.2.0
