@@ -120,7 +120,7 @@ mac_status() {
 #Interface Selector
 select_interface() {
   title
-  echo -e "  ${Cyan}No. Status\t\tInterface${Color_Off}"
+  echo -e " ${Cyan}No. Status\tInterface${Color_Off}"
   for ((i=1; i<=${#interface_list[@]}; i++))
   do
     if ifconfig ${interface_list[$i-1]} | grep -q "UP" ;then
@@ -129,13 +129,13 @@ select_interface() {
       status="${Red}DOWN${Color_Off}"
     fi
     if [[ $i -lt 10 ]] ;then
-      echo -e "  0$i. $status\t${interface_list[$i-1]}"
+      echo -e " 0$i. $status\t${interface_list[$i-1]}"
     else
-      echo -e "  $i. $status\t${interface_list[$i-1]}"
+      echo -e " $i. $status\t${interface_list[$i-1]}"
     fi
   done
-  echo -e "  99. ${Yellow}Re-scan${Color_Off}"
-  echo -e "  00. ${Red}Exit${Color_Off}"
+  echo -e " 99. ${Yellow}Re-scan${Color_Off}"
+  echo -e " 00. ${Red}Exit${Color_Off}"
   echo -e "${Cyan}#-----------------------------------------------------#"
   echo -e "  ${BIWhite}Select an interface..."
   echo -e "${Cyan}#-----------------------------------------------------#"
