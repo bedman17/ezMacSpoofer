@@ -185,9 +185,13 @@ mainmenu() {
   fi
 }
 number1() {
-    echo -e -n "${White}Type ${BIYellow}MAC${White} address (format: 'XX:XX:XX:XX:XX:XX') : "& read mac
+    echo -e "${White}Type ${BIYellow}MAC${White} address (format: 'XX:XX:XX:XX:XX:XX'), type 'cancel' to abort"
+    echo -e -n "${Red}[${Cyan}ezMacSpoofer${Yellow}@${White}$(hostname)${Red}]-[${Yellow}~${Red}] ${White}"& read answer
+    if [[ $answer == "cancel" ]] ;then
+      mainmenu
+    fi
     ifconfig $selected_interface down
-    if macchanger -m $mac $selected_interface | grep -q "New" ;then
+    if macchanger -m $answer $selected_interface | grep -q "New" ;then
       echo -e -n "${BIYellow}MAC${White} address successfully changed!${BIGreen}" && sleep 3.5 &
       spinner "$!"
       ifconfig $selected_interface up
