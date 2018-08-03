@@ -100,22 +100,40 @@ scan_interface() {
 }
 #Title Bar
 title() {
-  current_mac=$(macchanger -s $selected_interface | grep "Current" | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
-  permanent_mac=$(macchanger -s $selected_interface | grep "Permanent" | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
   clear
   echo -e "${Cyan}#-----------------------------------------------------#"
   echo -e "${Cyan}#${BIWhite}         _____         _____             ___         ${Cyan}#"
   echo -e "${Cyan}#${BIWhite} ___ ___|     |___ ___|  __ |___ ___ ___|  _|___ ___ ${Cyan}#"
   echo -e "${Cyan}#${BIWhite}| -_|- _| | | | .'|  _|__   | . | . | . |  _| -_|  _|${Cyan}#"
   echo -e "${Cyan}#${BIWhite}|___|___|_|_|_|__,|___|_____|  _|___|___|_| |___|_|  ${Cyan}#"
-  echo -e "${Cyan}#${BIWhite}                            |_|             ${On_IRed}v0.2.0${Cyan}   #"
+  echo -e "${Cyan}#${BIWhite}                            |_|             ${On_IRed}v1.0.0${Cyan}   #"
   echo -e "${Cyan}#-----------------------------------------------------#"
 }
 mac_status() {
+  current_mac=$(macchanger -s $selected_interface | grep "Current" | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+  permanent_mac=$(macchanger -s $selected_interface | grep "Permanent" | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
   echo -e "${White}       ${BIWhite}[${Yellow}@${BIWhite}]${White}Selected interface : ${BIRed}$selected_interface${Color_Off}"
   echo -e "${White}       ${BIWhite}[${Yellow}@${BIWhite}]${White}Current ${BIYellow}MAC${White}        : ${BIWhite}$current_mac${Color_Off}"
   echo -e "${White}       ${BIWhite}[${Yellow}@${BIWhite}]${White}Permanent ${BIYellow}MAC${White}      : ${BIGreen}$permanent_mac${Color_Off}"
   echo -e "${Cyan}#-----------------------------------------------------#"
+}
+prerequisite() {
+  if ! [ $(id -u) = "0" ] 2>/dev/null; then
+    echo "Use 'sudo ./ezMacSpoofer.sh' to run the script"
+    exit
+  fi
+  title
+	 if ! hash macchanger 2>/dev/nul ;then
+     echo -e "${BIWhite}       This script require ${BIYellow}mac${BIWhite}changer installed"
+     echo -e "${BIWhite}                 in order to use it"
+     echo -e "${Cyan}#-----------------------------------------------------#"
+     echo -e "${White}  Press enter to ${Red}exit${White}..."
+     echo -e -n "${Cyan}#-----------------------------------------------------#" & read enter
+     exit
+   else
+     scan_interface
+   fi
+  sleep 0.025
 }
 #Interface Selector
 select_interface() {
@@ -137,13 +155,13 @@ select_interface() {
   echo -e " 99. ${Yellow}Re-scan${Color_Off}"
   echo -e " 00. ${Red}Exit${Color_Off}"
   echo -e "${Cyan}#-----------------------------------------------------#"
-  echo -e "  ${BIWhite}Select an interface..."
+  echo -e "  ${White}Select an interface..."
   echo -e "${Cyan}#-----------------------------------------------------#"
   echo -e -n "${Red}[${Cyan}ezMacSpoofer${Yellow}@${White}$(hostname)${Red}]-[${Yellow}~${Red}] ${White}"& read answer
   re='^[0-9]+$'
   if [[ $answer =~ $re ]] ;then
     if [[ $answer -le ${#interface_list[@]} && $answer -gt 0 ]] ;then
-      echo -e -n "Interface ${interface_list[$answer-1]} has been selected!" && sleep 3.5 &
+      echo -e -n "${White}Interface ${BIRed}${interface_list[$answer-1]}${White} has been selected!${BGreen}" && sleep 3.5 &
       spinner "$!"
       selected_interface=${interface_list[$answer-1]}
       mainmenu
@@ -165,9 +183,11 @@ mainmenu() {
   echo -e "  ${BIWhite}What do you want to do?"
   echo -e "  ${Cyan}1. ${White}Change ${BIYellow}MAC${White} to specific ${BIYellow}MAC"
   echo -e "  ${Cyan}2. ${White}Change ${BIYellow}MAC${White} to random ${BIYellow}MAC"
-  echo -e "  ${Cyan}3. ${White}Change interface"
-  echo -e "  ${Cyan}4. ${White}Change ${BIYellow}MAC${White} to permanent ${BIYellow}MAC"
-  echo -e "  ${Cyan}0. ${BIRed}Exit"
+  echo -e "  ${Cyan}3. ${White}Change ${BIYellow}MAC${White} to permanent ${BIYellow}MAC"
+  echo -e "  ${Cyan}4. ${White}Change ${BIYellow}MAC${White} to random vendor ${BIYellow}MAC${White} of the same kind"
+  echo -e "  ${Cyan}5. ${White}Change ${BIYellow}MAC${White} to random vendor ${BIYellow}MAC${White} of any kind"
+  echo -e "  ${Cyan}9. ${White}Change interface"
+  echo -e "  ${Red}0. ${BIRed}Exit"
   echo -e "${Cyan}#-----------------------------------------------------#"
   echo -e -n "${Red}[${Cyan}ezMacSpoofer${Yellow}@${White}$(hostname)${Red}]-[${Yellow}~${Red}] ${White}"& read answer
   if [[ $answer == 1 ]] ;then
@@ -178,6 +198,10 @@ mainmenu() {
     number3
   elif [[ $answer == 4 ]] ;then
     number4
+  elif [[ $answer == 5 ]] ;then
+    number5
+  elif [[ $answer == 9 ]] ;then
+    number9
   elif [[ $answer == 0 ]] ;then
     exit
   else
@@ -209,9 +233,6 @@ number2() {
   mainmenu
 }
 number3() {
-  scan_interface
-}
-number4() {
   ifconfig $selected_interface down
   macchanger -p $selected_interface | grep -q ""
   echo -e -n "${BIYellow}MAC${White} address changed to permanent ${BIYellow}MAC${BIGreen}"&& sleep 3.5 &
@@ -219,4 +240,23 @@ number4() {
   ifconfig $selected_interface up
   mainmenu
 }
-scan_interface
+number4() {
+  ifconfig $selected_interface down
+  macchanger -a $selected_interface | grep -q ""
+  echo -e -n "${BIYellow}MAC${White} address changed to random vendor ${BIYellow}MAC${White} of the same kind${BIGreen}"&& sleep 3.5 &
+  spinner "$!"
+  ifconfig $selected_interface up
+  mainmenu
+}
+number5() {
+  ifconfig $selected_interface down
+  macchanger -A $selected_interface | grep -q ""
+  echo -e -n "${BIYellow}MAC${White} address changed to random vendor ${BIYellow}MAC${White} of any kind${BIGreen}"&& sleep 3.5 &
+  spinner "$!"
+  ifconfig $selected_interface up
+  mainmenu
+}
+number9() {
+  scan_interface
+}
+prerequisite
